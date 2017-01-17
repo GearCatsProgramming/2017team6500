@@ -2,11 +2,13 @@ package org.usfirst.frc.team6500.robot;
 
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.XboxController;
 
 public class Robot extends IterativeRobot {
 
@@ -14,8 +16,8 @@ public class Robot extends IterativeRobot {
 	Spark fleft, fright, bleft, bright;
 	
 	//Create an object for the controller based on the Joystick class (or XboxController)
-	Joystick controller;
-	//XboxController controller;
+	//Joystick controlleer;
+	XboxController controller;
 	
 	//Creating a RobotDrive object called drive so we can control the motors as a whole, not individually
 	RobotDrive drive;
@@ -67,7 +69,7 @@ public class Robot extends IterativeRobot {
 		drive.setSafetyEnabled(false);
 		
 		//Creating the Joystick object using the USB port ID we have it plugged into
-		controller = new Joystick(Ports.joystickid);
+		controller = new XboxController(Ports.joystickid);
 		//controller = new XboxController(Ports.joystickid);
 		
 		//Making instances for the sensors and calibrating them/setting them up
@@ -191,8 +193,8 @@ public class Robot extends IterativeRobot {
 		//However, the value returned by the getThrottle function ranges
 		//from -1 to 1, and we need a range of 0 to 1, so we add 1 to
 		//make the range 0 to 2
-		//double multiplier = controller.get
-		double multiplier = controller.getThrottle() + 1;
+		double multiplier = controller.getRawAxis(3);
+		//double multiplier = controller.getThrottle() + 1;
 		//Then we divide by 2 to get the correct range of 0 to 1
 		multiplier = multiplier / 2;
 		//The thing is, the value returned by getThrottle conflicts with
@@ -204,8 +206,8 @@ public class Robot extends IterativeRobot {
 		//This code does the switching for drive modes.
 		//The if statement checks if button #2 on the controller (where the thumb rests),
 		//and checks to make sure it hasn't been too soon since a button was pressed
-		//if (controller.getStartButton() && controldelay == 0){
-		if (controller.getRawButton(2) && controldelay == 0) {
+		if (controller.getStartButton() && controldelay == 0){
+		//if (controller.getRawButton(2) && controldelay == 0) {
 			//If the driveMode is 0 or 1, we can just add 1 to change it
 			//and inform the user that the mode changed, just for confirmation
 			if (driveMode == 0 || driveMode == 1){
@@ -236,21 +238,25 @@ public class Robot extends IterativeRobot {
 		//If the robot is in debugging mode,
 		if (driveMode == 1) {
 			//check if button 3 is pressed,
-			if (controller.getRawButton(5)) {
+			if (controller.getXButton()) {
+			//if (controller.getRawButton(5)) {
 				//if it is move the left side motors at full power.
 				fleft.set(0.75 * multiplier);
 				bleft.set(0.75 * multiplier);
 			}else{
 				//Check if button 5 is pressed,
-				if (controller.getRawButton(6)) {
+				if (controller.getBButton()) {
+				//if (controller.getRawButton(6)) {
 					//if it is move the right side motors at full power.
 					fright.set(0.75 * multiplier);
 					bright.set(0.75 * multiplier);
 				}else{
-					if (controller.getRawButton(7)){
+					if (controller.getBumper(Hand.kRight)) {
+					//if (controller.getRawButton(7)){
 						drive.tankDrive(1, 1);
 					}else{
-						if (controller.getRawButton(8)) {
+						if (controller.getBumper(Hand.kLeft)) {
+						//if (controller.getRawButton(8)) {
 							drive.tankDrive(0.75, 0.75);
 						}else{
 							//If neither button 3 or button 5 are being pressed, stop the motors.
@@ -276,54 +282,52 @@ public class Robot extends IterativeRobot {
 	}
 	
 	public double getLeftPower() {
-		yindex = controller.getY();
-		if (controller.getRawButton(3)) {
+		yindex = controller.getY(Hand.kLeft);
+		//yindex = controller.getY();
+		if (controller.getBumper(Hand.kLeft)) {
+		//if (controller.getRawButton(3)) {
 			turnindex = -0.5;
 		}
-		if (controller.getRawButton(4)) {
+		if (controller.getBumper(Hand.kRight)) {
+		//if (controller.getRawButton(4)) {
 			turnindex = 0.5;
 		}
-		if (controller.getRawButton(5)) {
+		if (controller.getBumper(Hand.kLeft) && controller.getBButton()) {
+		//if (controller.getRawButton(5)) {
 			turnindex = -1;
 		}
-		if (controller.getRawButton(6)) {
+		if (controller.getBumper(Hand.kRight) && controller.getBButton()) {
+		//if (controller.getRawButton(6)) {
 			turnindex = 1;
 		}
 		yindex = yindex * ymult;
 		turnindex = turnindex * turnmult;
-//		if (turnindex > 0) {
-//			turnindex = 0 - turnindex;
-//		}
-//		if (turnindex < 0) {
-//			turnindex = 0 + turnindex;
-//		}
 		power = yindex + turnindex;
 		power = 0 - power;
 		return power;
 	}
 	
 	public double getRightPower() {
-		yindex = controller.getY();
-		if (controller.getRawButton(3)) {
+		yindex = controller.getY(Hand.kLeft);
+		//yindex = controller.getY();
+		if (controller.getBumper(Hand.kLeft)) {
+		//if (controller.getRawButton(3)) {
 			turnindex = 0.5;
 		}
-		if (controller.getRawButton(4)) {
+		if (controller.getBumper(Hand.kRight)) {
+		//if (controller.getRawButton(4)) {
 			turnindex = -0.5;
 		}
-		if (controller.getRawButton(5)) {
+		if (controller.getBumper(Hand.kLeft) && controller.getBButton()) {
+		//if (controller.getRawButton(5)) {
 			turnindex = 1;
 		}
-		if (controller.getRawButton(6)) {
+		if (controller.getBumper(Hand.kRight) && controller.getBButton()) {
+		//if (controller.getRawButton(6)) {
 			turnindex = -1;
 		}
 		yindex = yindex * ymult;
 		turnindex = turnindex * turnmult;
-//		if (turnindex > 0) {
-//			turnindex = 0 + turnindex;
-//		}
-//		if (turnindex < 0) {
-//			turnindex = 0 - turnindex;
-//		}
 		power = yindex + turnindex;
 		power = 0 - power;
 		return power; 
