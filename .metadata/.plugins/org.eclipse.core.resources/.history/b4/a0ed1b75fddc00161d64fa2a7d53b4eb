@@ -202,8 +202,7 @@ public class Robot extends IterativeRobot {
 		//the plus indicator, it decreases the value, and vice versa for
 		//the negative indicator.  So we have to inverse the value by doing
 		//1 minus our previous value.
-		multiplier = multiplier + 0.5;
-		//multiplier = 1 - multiplier;
+		multiplier = 1 - multiplier;
 		//This code does the switching for drive modes.
 		//The if statement checks if button #2 on the controller (where the thumb rests),
 		//and checks to make sure it hasn't been too soon since a button was pressed
