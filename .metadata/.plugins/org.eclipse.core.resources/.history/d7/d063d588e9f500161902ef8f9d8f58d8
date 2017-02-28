@@ -1,0 +1,14 @@
+package org.usfirst.frc.team6500.robot;
+
+public abstract class Ports{
+	public static int leftfront = 0;
+	public static int leftrear = 1;
+	public static int rightfront = 2;
+	public static int rightrear = 3;
+	public static int elevator = 4;
+	public static int rightGear = 5;
+	public static int leftGear = 6;
+	public static int pan = 7;
+	public static int tilt = 8;
+	public static int joystickid = 0;
+}
