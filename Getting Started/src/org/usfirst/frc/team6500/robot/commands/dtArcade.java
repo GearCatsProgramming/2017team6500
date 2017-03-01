@@ -17,7 +17,8 @@ public class dtArcade extends Command {
 	public JoystickPair controllers;
 	public Joystick controllerR;
 
-    public dtArcade() {
+    @SuppressWarnings("static-access")
+	public dtArcade() {
     	requires(Robot.control);
     	requires(Robot.drive);
     	if (Robot.control.getCurrentCT() == "Joystick"){
@@ -50,6 +51,7 @@ public class dtArcade extends Command {
 
     // Called once after isFinished returns true
     protected void end() {
+    	Robot.drive.brakeStop();
     }
 
     // Called when another command which requires one or more of the same

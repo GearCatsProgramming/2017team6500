@@ -1,2 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<qualifiedTypeNameHistroy/>
+<qualifiedTypeNameHistroy>
+<fullyQualifiedTypeName name="org.usfirst.frc.team6500.robot.commands.GetJoysticks"/>
+<fullyQualifiedTypeName name="org.usfirst.frc.team6500.robot.JoystickPair"/>
+<fullyQualifiedTypeName name="org.usfirst.frc.team6500.robot.subsystems.Control"/>
+<fullyQualifiedTypeName name="edu.wpi.first.wpilibj.buttons.Button"/>
+<fullyQualifiedTypeName name="org.usfirst.frc.team6500.robot.commands.ChangeMode"/>
+<fullyQualifiedTypeName name="org.usfirst.frc.team6500.robot.Robot"/>
+</qualifiedTypeNameHistroy>

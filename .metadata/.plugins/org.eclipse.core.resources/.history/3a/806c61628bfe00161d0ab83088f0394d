@@ -1,0 +1,46 @@
+package org.usfirst.frc.team6500.robot.subsystems;
+
+import edu.wpi.first.wpilibj.Servo;
+import edu.wpi.first.wpilibj.command.Subsystem;
+
+/**
+ *
+ */
+public class Flaps extends Subsystem {
+	
+	public Servo leftFlap, rightFlap;
+	boolean flaps;
+
+    public void initServos(int left, int right, boolean defaultPos) {
+    	this.leftFlap = new Servo(left);
+    	this.rightFlap = new Servo(right);
+    	this.flaps = defaultPos;
+    }
+    
+    public void flapsUp() {
+    	leftFlap.set(0.4);
+    	rightFlap.set(0.0);
+    	flaps = true;
+    }
+    
+    public void flapsDown() {
+    	leftFlap.set(0.0);
+    	rightFlap.set(0.4);
+    	flaps = false;
+    }
+    
+    public void toggleFlaps() {
+    	if (flaps) {
+			leftFlap.set(0.5);
+			rightFlap.set(0);
+		}else{
+			leftFlap.set(0);
+			rightFlap.set(0.4);
+		}
+    }
+
+    public void initDefaultCommand() {
+        // Set the default command for a subsystem here.
+        //setDefaultCommand(new MySpecialCommand());
+    }
+}

@@ -10,6 +10,8 @@ public abstract class Ports{
 	public static int leftGear = 6;
 	public static int pan = 7;
 	public static int tilt = 8;
+	public static int actuator = 9;
+	
 	public static int joystickid = 0;
 	public static int joystickid2 = 1;
 }
