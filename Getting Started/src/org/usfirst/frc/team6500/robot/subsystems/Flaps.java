@@ -30,12 +30,14 @@ public class Flaps extends Subsystem {
     }
     
     public void toggleFlaps() {
-    	if (flaps) {
+    	if (this.flaps) {
 			this.leftFlap.set(0.5);
 			this.rightFlap.set(0);
+			this.flaps = false;
 		}else{
 			this.leftFlap.set(0);
 			this.rightFlap.set(0.4);
+			this.flaps = true;
 		}
     }
 

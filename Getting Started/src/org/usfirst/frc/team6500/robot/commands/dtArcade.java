@@ -19,6 +19,7 @@ public class dtArcade extends Command {
 
     @SuppressWarnings("static-access")
 	public dtArcade() {
+    	System.out.println("creating");
     	requires(Robot.control);
     	requires(Robot.drive);
     	if (Robot.control.getCurrentCT() == "Joystick"){
@@ -27,21 +28,24 @@ public class dtArcade extends Command {
     	}else{
     		System.out.println("ERROR: XBox Control is no longer supported");
     	}
+    	System.out.println("created");
     }
 
     // Called just before this Command runs the first time
     protected void initialize() {
+    	System.out.println("init");
     }
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
+    	System.out.println("exec");
     	double multiplier = controllerR.getThrottle() + 1;
     	multiplier = multiplier / 2;
     	multiplier = 1 - multiplier;
 		multiplier = multiplier * 0.75;
 		double boost = 0.0;
 		if (controllerR.getTrigger()) { boost = 0.05; }
-    	Robot.drive.arcadeDrive(controllerR.getY(), controllerR.getX(), multiplier + boost);
+    	Robot.drive.arcadeDrive(controllerR.getY(), -controllerR.getX(), multiplier + boost);
     }
 
     // Make this return true when this Command no longer needs to run execute()
@@ -51,11 +55,14 @@ public class dtArcade extends Command {
 
     // Called once after isFinished returns true
     protected void end() {
+    	System.out.println("ending");
     	Robot.drive.brakeStop();
     }
 
     // Called when another command which requires one or more of the same
     // subsystems is scheduled to run
     protected void interrupted() {
+    	System.out.println("interrupted");
+    	end();
     }
 }

@@ -11,7 +11,7 @@ public class toggleDumper extends Command {
 
     public toggleDumper() {
     	requires(Robot.dumper);
-    	setTimeout(0.5);
+    	setTimeout(1.2);
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
     }

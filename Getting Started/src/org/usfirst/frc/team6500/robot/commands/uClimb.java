@@ -7,12 +7,8 @@ import edu.wpi.first.wpilibj.command.Command;
  *
  */
 public class uClimb extends Command {
-	
-	double seconds;
 
-    public uClimb(double seconds) {
-    	this.seconds = seconds;
-    	setTimeout(seconds);
+    public uClimb() {
     	requires(Robot.elevator);
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
@@ -30,12 +26,11 @@ public class uClimb extends Command {
 
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-        return isTimedOut();
+        return false;
     }
 
     // Called once after isFinished returns true
     protected void end() {
-    	Robot.elevator.stop();
     }
 
     // Called when another command which requires one or more of the same

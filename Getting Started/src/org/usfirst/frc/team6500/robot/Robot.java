@@ -37,10 +37,11 @@ public class Robot extends IterativeRobot {
 		pantilt = new Camera();
 		dumper = new Dumper();
 		gyroscope = new Gyro();
-		oi = new OI();
 		
 		drive.initMotors(Ports.rightfront, Ports.rightrear, Ports.leftfront, Ports.leftrear);
+		//drive.initDefaultCommand();
 		control.initSticks(Ports.joystickid2, Ports.joystickid);
+		oi = new OI();
 		elevator.initMotor(Ports.elevator);
 		gearFlaps.initServos(Ports.leftGear, Ports.rightGear, false);
 		pantilt.initServos(Ports.pan, Ports.tilt, 0.0, 0.3);
@@ -65,7 +66,11 @@ public class Robot extends IterativeRobot {
 	
 	@Override
 	public void teleopInit(){
-		autonomousCommand.cancel();
+		if (false) {
+			if (autonomousCommand.isRunning()) {
+				autonomousCommand.cancel();
+			}
+		}
 	}
 	
 	//This method loops as fast as possible while the robot is in
@@ -73,6 +78,8 @@ public class Robot extends IterativeRobot {
 	//the teleoperated (controlled by driver) period of the match
 	@Override
 	public void teleopPeriodic() {
+		System.out.println("running");
+		
 		Scheduler.getInstance().run();
 		
 		if (control.controllerR.getRawButton(12)) {
@@ -82,6 +89,7 @@ public class Robot extends IterativeRobot {
 		}
 		
 		//Putting values to the SmartDashboard
+		SmartDashboard.putData("SchedulerData", Scheduler.getInstance());
 		SmartDashboard.putNumber("Gyroscope Angle", gyroscope.gyroAngle());
 		SmartDashboard.putNumber("Pan Position", pantilt.panpos);
 		SmartDashboard.putNumber("Tilt Position", pantilt.tiltpos);

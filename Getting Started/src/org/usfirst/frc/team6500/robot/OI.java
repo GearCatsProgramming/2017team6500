@@ -31,9 +31,11 @@ public class OI {
 		Button button12 = new JoystickButton(controllerR, 12);
 		
 		button3.whenPressed(new toggleDumper());
-		button4.whileHeld(new dClimb(0.1));
-		button5.whenActive(new toggleFlaps());
-		button6.whileHeld(new uClimb(0.1));
+		button4.whenPressed(new dClimb());
+		button4.whenReleased(new stopClimb());
+		button5.whenPressed(new toggleFlaps());
+		button6.whenPressed(new uClimb());
+		button6.whenReleased(new stopClimb());
 		button7.whenPressed(new moveCamera(0.0, 0.9));
 		button8.whenPressed(new moveCamera(0.5, 0.9));
 		button9.whenPressed(new moveCamera(1.0, 0.1));
