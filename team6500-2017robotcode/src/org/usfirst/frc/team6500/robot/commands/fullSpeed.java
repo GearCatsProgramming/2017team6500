@@ -1,6 +1,6 @@
 package org.usfirst.frc.team6500.robot.commands;
 
-import org.usfirst.frc.team6500.robot.Robot;
+import org.usfirst.frc.team6500.robot.Blargh;
 
 import edu.wpi.first.wpilibj.command.Command;
 
@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj.command.Command;
 public class fullSpeed extends Command {
 
     public fullSpeed() {
-    	requires(Robot.drive);
+    	requires(Blargh.drive);
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
     }
@@ -21,7 +21,7 @@ public class fullSpeed extends Command {
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
-    	Robot.drive.tankDrive(1, 1, 1);
+    	Blargh.drive.tankDrive(1, 1, 1);
     }
 
     // Make this return true when this Command no longer needs to run execute()

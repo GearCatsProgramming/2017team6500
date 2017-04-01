@@ -1,6 +1,6 @@
 package org.usfirst.frc.team6500.robot.commands;
 
-import org.usfirst.frc.team6500.robot.Robot;
+import org.usfirst.frc.team6500.robot.Blargh;
 
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.command.Command;
@@ -11,11 +11,11 @@ import edu.wpi.first.wpilibj.command.Command;
 public class checkPOV extends Command {
 	
 	@SuppressWarnings("static-access")
-	public Joystick controllerR = Robot.control.getJoysticks().rightJoy;
+	public Joystick controllerR = Blargh.control.getJoysticks().rightJoy;
 
     public checkPOV() {
-    	requires(Robot.pantilt);
-    	requires(Robot.control);
+    	requires(Blargh.pantilt);
+    	requires(Blargh.control);
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
     }
@@ -29,18 +29,18 @@ public class checkPOV extends Command {
     protected void execute() {
     	int POVpos = controllerR.getPOV();
     	if (POVpos == 180) {
-			Robot.pantilt.tiltDown();
+			Blargh.pantilt.tiltDown();
 		}else{
 			if (POVpos == 0) {
-				Robot.pantilt.tiltUp();
+				Blargh.pantilt.tiltUp();
 			}
 		}
 		
 		if (POVpos == 90) {
-			Robot.pantilt.panRight();
+			Blargh.pantilt.panRight();
 		}else{
 			if (POVpos == 270) {
-				Robot.pantilt.panLeft();
+				Blargh.pantilt.panLeft();
 			}
 		}
     }

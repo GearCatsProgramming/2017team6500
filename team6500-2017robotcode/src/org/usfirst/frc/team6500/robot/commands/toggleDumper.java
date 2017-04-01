@@ -1,7 +1,7 @@
 package org.usfirst.frc.team6500.robot.commands;
 
 
-import org.usfirst.frc.team6500.robot.Robot;
+import org.usfirst.frc.team6500.robot.Blargh;
 import edu.wpi.first.wpilibj.command.Command;
 
 /**
@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj.command.Command;
 public class toggleDumper extends Command {
 
     public toggleDumper() {
-    	requires(Robot.dumper);
+    	requires(Blargh.dumper);
     	setTimeout(1.2);
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
@@ -18,10 +18,10 @@ public class toggleDumper extends Command {
 
     // Called just before this Command runs the first time
     protected void initialize() {
-    	if (Robot.dumper.out){
-    		Robot.dumper.goForward();
+    	if (Blargh.dumper.out){
+    		Blargh.dumper.goForward();
     	}else{
-    		Robot.dumper.goBackward();
+    		Blargh.dumper.goBackward();
     	}
     }
 
@@ -37,7 +37,7 @@ public class toggleDumper extends Command {
 
     // Called once after isFinished returns true
     protected void end() {
-    	Robot.dumper.stopMoving();
+    	Blargh.dumper.stopMoving();
     }
 
     // Called when another command which requires one or more of the same

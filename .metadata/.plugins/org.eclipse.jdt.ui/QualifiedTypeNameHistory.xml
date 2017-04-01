@@ -5,5 +5,18 @@
 <fullyQualifiedTypeName name="org.usfirst.frc.team6500.robot.subsystems.Control"/>
 <fullyQualifiedTypeName name="edu.wpi.first.wpilibj.buttons.Button"/>
 <fullyQualifiedTypeName name="org.usfirst.frc.team6500.robot.commands.ChangeMode"/>
+<fullyQualifiedTypeName name="org.usfirst.frc.team6500.robot.commands.uClimb"/>
+<fullyQualifiedTypeName name="org.usfirst.frc.team6500.robot.subsystems.Elevator"/>
+<fullyQualifiedTypeName name="edu.wpi.first.wpilibj.Victor"/>
+<fullyQualifiedTypeName name="org.usfirst.frc.team6500.robot.commands.toggleDumper"/>
+<fullyQualifiedTypeName name="org.usfirst.frc.team6500.robot.commands.dClimb"/>
+<fullyQualifiedTypeName name="org.usfirst.frc.team6500.robot.Ports"/>
+<fullyQualifiedTypeName name="edu.wpi.first.wpilibj.command.Scheduler"/>
+<fullyQualifiedTypeName name="org.usfirst.frc.team6500.robot.commands.checkPOV"/>
+<fullyQualifiedTypeName name="edu.wpi.first.wpilibj.Joystick"/>
 <fullyQualifiedTypeName name="org.usfirst.frc.team6500.robot.Robot"/>
+<fullyQualifiedTypeName name="edu.wpi.first.wpilibj.Servo"/>
+<fullyQualifiedTypeName name="edu.wpi.cscore.VideoSource"/>
+<fullyQualifiedTypeName name="edu.wpi.first.wpilibj.Timer"/>
+<fullyQualifiedTypeName name="edu.wpi.first.wpilibj.DigitalInput"/>
 </qualifiedTypeNameHistroy>

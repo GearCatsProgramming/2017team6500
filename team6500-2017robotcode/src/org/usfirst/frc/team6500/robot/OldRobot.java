@@ -84,12 +84,12 @@ public class OldRobot extends IterativeRobot {
 		drive = new RobotDrive(fleft, bleft, fright, bright);
 		
 		elevator = new Victor(Ports.elevator);
-		dumper = new Victor(Ports.actuator);
-		
-		drive.setSafetyEnabled(false);
-		
-		pan = new Servo(Ports.pan);
-		tilt = new Servo(Ports.tilt);
+//		dumper = new Victor(Ports.actuator);
+//		
+//		drive.setSafetyEnabled(false);
+//		
+//		pan = new Servo(Ports.pan);
+//		tilt = new Servo(Ports.tilt);
 		setPT();
 		
 		leftFlap = new Servo(Ports.leftGear);

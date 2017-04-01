@@ -1,7 +1,7 @@
 package org.usfirst.frc.team6500.robot.commands;
 
 import org.usfirst.frc.team6500.robot.JoystickPair;
-import org.usfirst.frc.team6500.robot.Robot;
+import org.usfirst.frc.team6500.robot.Blargh;
 
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
@@ -19,10 +19,10 @@ public class dtTank extends Command {
     
     @SuppressWarnings("static-access")
 	public dtTank() {
-    	requires(Robot.control);
-    	requires(Robot.drive);
-    	if (Robot.control.getCurrentCT() == "Joystick"){
-    		this.controllers = Robot.control.getJoysticks();
+    	requires(Blargh.control);
+    	requires(Blargh.drive);
+    	if (Blargh.control.getCurrentCT() == "Joystick"){
+    		this.controllers = Blargh.control.getJoysticks();
         	this.controllerR = controllers.rightJoy;
         	this.controllerL = controllers.leftJoy;
     	}else{
@@ -43,7 +43,7 @@ public class dtTank extends Command {
 		multiplier = multiplier * 0.75;
 		double boost = 0.0;
 		if (controllerL.getTrigger() && controllerR.getTrigger()) { boost = 0.05; }
-		Robot.drive.tankDrive(controllerL.getY(), controllerR.getY(), multiplier + boost);
+		Blargh.drive.tankDrive(controllerL.getY(), controllerR.getY(), multiplier + boost);
     }
 
     // Make this return true when this Command no longer needs to run execute()

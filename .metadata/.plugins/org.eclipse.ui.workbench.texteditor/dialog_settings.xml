@@ -2,12 +2,13 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="xval" key="selection"/>
+		<item value="baselineOrGear" key="selection"/>
 		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
+			<item value="DI2state"/>
 			<item value="rotateValue"/>
 			<item value="moveValue"/>
 			<item value="rightMotorSpeed"/>
@@ -15,9 +16,9 @@
 			<item value="shooter"/>
 			<item value="XButton"/>
 			<item value="AButton"/>
-			<item value="A"/>
 		</list>
 		<list key="replacehistory">
+			<item value="baselineOrGear"/>
 			<item value="xval"/>
 			<item value="yval"/>
 			<item value="rightPower"/>

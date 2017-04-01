@@ -1,6 +1,6 @@
 package org.usfirst.frc.team6500.robot.commands;
 
-import org.usfirst.frc.team6500.robot.Robot;
+import org.usfirst.frc.team6500.robot.Blargh;
 import edu.wpi.first.wpilibj.command.Command;
 
 /**
@@ -13,7 +13,7 @@ public class moveCamera extends Command {
     public moveCamera(double pan, double tilt) {
     	this.panpos = pan;
     	this.tiltpos = tilt;
-    	requires(Robot.pantilt);
+    	requires(Blargh.pantilt);
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
     }
@@ -25,7 +25,7 @@ public class moveCamera extends Command {
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
-    	Robot.pantilt.movecam(this.panpos, this.tiltpos);
+    	Blargh.pantilt.movecam(this.panpos, this.tiltpos);
     }
 
     // Make this return true when this Command no longer needs to run execute()
