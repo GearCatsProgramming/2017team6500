@@ -22,6 +22,8 @@ public class Robot extends IterativeRobot {
 	Victor elevator;
 	Victor dumper;
 	
+	double rightYpower, rightXpower, leftYpower;
+	
 	PowerDistributionPanel pdp;
 	
 	//Create an object for the controller based on the Joystick class (or XboxController)
@@ -55,7 +57,7 @@ public class Robot extends IterativeRobot {
 	
 	public void toggleFlaps() {
 		if (flaps) {
-			leftFlap.set(0.5);
+			leftFlap.set(0.4);
 			rightFlap.set(0.0);
 			flaps = false;
 		}else{
@@ -218,7 +220,9 @@ public class Robot extends IterativeRobot {
 				System.out.println("Nothing");
 			}
 			
-			gyro.calibrate();
+//			System.out.print("Calibrating Gyro...");
+//			gyro.calibrate();
+//			System.out.println("Gyro Calibrated!");
 			
 			//Left
 			if (autotype == 0){
@@ -316,7 +320,7 @@ public class Robot extends IterativeRobot {
 		//from -1 to 1, and we need a range of 0 to 1, so we add 1 to
 		//make the range 0 to 2
 		double multiplier = controllerR.getThrottle() + 1;
-		//Then we divide by 2 to get the correct range of 0 to 1
+//		//Then we divide by 2 to get the correct range of 0 to 1
 		multiplier = multiplier / 2;
 		//The thing is, the value returned by getThrottle conflicts with
 		//the indicators on the joystick.  When you move the throttle towards
@@ -324,13 +328,13 @@ public class Robot extends IterativeRobot {
 		//the negative indicator.  So we have to inverse the value by doing
 		//1 minus our previous value.
 		multiplier = 1 - multiplier;
-		multiplier = multiplier * 0.80;
+		multiplier = multiplier * 0.85;
 		//This code does the switching for drive modes.
 		//The if statement checks if button #2 on the controller (where the thumb rests),
 		//and checks to make sure it hasn't been too soon since a button was pressed
 		boolean nitro = controllerR.getRawButton(12);
 		if (nitro) {
-			drive.tankDrive(-1.0, -1.0);
+			drive.tankDrive(-0.90, -0.90);
 		}else{
 			if (controllerR.getRawButton(11) && controldelay == 0) {
 				if (driveArcade) {
@@ -411,10 +415,39 @@ public class Robot extends IterativeRobot {
 			
 			setPT();
 			
-			if (driveArcade) {
-				drive.arcadeDrive(controllerR.getY() * (multiplier + rightboost), controllerR.getX() * (multiplier + rightboost));
+			rightYpower = controllerR.getY() * (multiplier + rightboost);
+			rightXpower = controllerR.getX() * (multiplier + rightboost);
+			
+			leftYpower = controllerL.getY() * (multiplier + rightboost);
+			
+			if (rightYpower > 0.75) {
+				rightYpower = 0.75;
 			}else{
-				drive.tankDrive(controllerL.getY() * (multiplier + leftboost), controllerR.getY() * (multiplier + rightboost));
+				if (rightYpower < -0.75) {
+					rightYpower = 0.75;
+				}
+			}
+			
+			if (rightXpower > 0.75) {
+				rightXpower = 0.75;
+			}else{
+				if (rightXpower < -0.75) {
+					rightXpower = -0.75;
+				}
+			}
+			
+			if (leftYpower > 0.75) {
+				leftYpower = 0.75;
+			}else{
+				if (leftYpower < -0.75) {
+					leftYpower = -0.75;
+				}
+			}
+			
+			if (driveArcade) {
+				drive.arcadeDrive(rightYpower, rightXpower);
+			}else{
+				drive.tankDrive(leftYpower, rightYpower);
 			}
 		}
 //		drive.arcadeDrive(controller.getY() * multiplier, -controller.getX() * multiplier);
