@@ -1,0 +1,470 @@
+package org.usfirst.frc.team6500.robot;
+
+import edu.wpi.first.wpilibj.ADXRS450_Gyro;
+import edu.wpi.first.wpilibj.CameraServer;
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.IterativeRobot;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.PowerDistributionPanel;
+import edu.wpi.first.wpilibj.RobotDrive;
+import edu.wpi.first.wpilibj.Servo;
+import edu.wpi.first.wpilibj.Spark;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.Victor;
+import edu.wpi.first.wpilibj.command.Scheduler;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
+public class Robot extends IterativeRobot {
+
+	//We have spark motor controllers so we are using the Spark class to initiate our front left, front right, back left, & back right motors
+	Spark fleft, fright, bleft, bright;
+	
+	Victor climber;
+	Victor dumper;
+	
+	double rightYpower, rightXpower, leftYpower;
+	
+	PowerDistributionPanel pdp;
+	
+	//Create an object for the controller based on the Joystick class (or XboxController)
+	Joystick controllerR, controllerL;
+	
+	//Creating a RobotDrive object called drive so we can control the motors as a whole, not individually
+	RobotDrive drive;
+	
+	//Our gyroscope is a model ADXRS450, and there is a class for that so we make a gyro object with it
+	ADXRS450_Gyro gyro;
+	
+	//A variable that makes sure the robot doesn't try and run the autonomous portion of code more than once
+	boolean autonomous = true;
+	
+	double rightboost, leftboost = 0.0;
+	
+	//The speed boost variable
+	//* Controlled by button number 
+	boolean nitro = false;
+	
+	//If a control delay variable is not created, the joystick's input is read too fast
+	//and the driver cycles through options way too fast to control it.
+	//* Used later for the following:
+	//** Line xx: Switching from Arcade to Tank controls
+	//** Line xx: Toggling the flaps
+	int controldelay = 0;
+	
+	//Keeps track of whether we are using tank or arcade controls
+	//* Defaults to arcade
+	//* Arcade == true, Tank == false
+	boolean driveArcade = true;
+	
+	//This variable holds whether the flaps are up or down
+	//* Up == true, Down == false
+	//* The flaps are "assumed" to be up at first for synchronization purposes
+	boolean flaps = true;
+	
+	//This variable holds whether the dumper is up or down 
+	//* Up == true, Down == false
+	//* The dumper is "assumed" to be up at first for synchronization purposes
+	boolean dumperUp = true;
+	
+	//The default positions for the pan and tilt servos
+	double panpos, tiltpos = 0.5;
+	
+	//Toggles the dumper up or down
+	private void toggleDumper() {
+		//If the dumper is up
+		if (dumperUp) {
+			//Set the motor to unwind the dumper string
+			dumper.set(0.9);
+			dumperUp = false;
+		}else{
+			//Set the motor to wind up the dumper string
+			dumper.set(-0.9);
+			dumperUp = true;
+		}
+		//Run the motor for one second, it's usually enough to get it all the way up or down
+		Timer.delay(1.0);
+		//Stop the motor
+		dumper.set(0.0);
+	}
+	
+	//Used for the autonomous selector
+	DigitalInput DI0;
+	DigitalInput DI1;
+	DigitalInput DI2;
+	
+	//The @Override tag means we are overriding the method that was defined in the superclass (IterativeRobot in this case)
+	//The robotInit method happens once when the RoboRio starts up and never again.
+	//We need to define everything that we will use later now
+	@Override
+	public void robotInit() {
+		//We create instances for the 4 motors objects from earlier
+		//and then create the new RobotDrive object using those instances
+		fleft = new Spark(Ports.leftfront);
+		fright = new Spark(Ports.rightfront);
+		bleft = new Spark(Ports.leftrear);
+		bright = new Spark(Ports.rightrear);
+		drive = new RobotDrive(fleft, bleft, fright, bright);
+		
+		//The left side motors are inverted as a workaround for the
+		//Spark motor driver's feature where when driving in reverse
+		//they only provide approximately 80 percent of the power
+		//the are instructed to provide
+		fleft.setInverted(true);
+		bleft.setInverted(true);
+		
+		//Create climber and dumper motor driver instances and toggle
+		//the dumper to be absolutely sure it is down
+		climber = new Victor(Ports.climber);
+		//dumper = new Victor(Ports.dumper);
+		toggleDumper();
+		
+		//This is set to make sure the program doesn't freak out
+		//when the Spark motor drivers glitch out as they have been
+		//known to do
+		drive.setSafetyEnabled(false);
+		
+		//DEPRECATED
+		//Create instances for the pan and tilt stand of the camera
+		//pan = new Servo(Ports.pan);
+		//tilt = new Servo(Ports.tilt);
+		//setPT();
+		
+		//Creating the Joystick object using the USB port ID we have it plugged into
+		controllerR = new Joystick(Ports.joystickid);
+		controllerL = new Joystick(Ports.joystickid2);
+		
+		//Making instances for the sensors and calibrating them/setting them up
+		gyro = new ADXRS450_Gyro();
+		gyro.calibrate();
+		
+		//Creating the instances for the digital Input and Output ports for the autonomous selector
+		DI0 = new DigitalInput(Ports.DI0);
+		DI1 = new DigitalInput(Ports.DI1);
+		DI2 = new DigitalInput(Ports.DI2);
+		
+		//Creating the instance for the power distribution panel in order to use
+		//it to check system voltage
+		pdp = new PowerDistributionPanel();
+		
+		CameraServer.getInstance().startAutomaticCapture();
+	}
+	
+	//This function sets all the motors to off when
+	//the robot is in soft disable mode
+	public void killmotors() {
+		fleft.set(0);
+		fright.set(0);
+		bleft.set(0);
+		bright.set(0);
+	}
+	
+	//This code runs when the autonomous portion of the match is happening,
+	//and it (should) only runs once (see the autonomous variable)
+	@Override
+	public void autonomousPeriodic() {
+		if (autonomous) {
+			//Chooses whether we are in the right, middle, or left starting position
+			boolean DI0state = DI0.get();
+			boolean DI1state = DI1.get();
+			//Selects whether we want to go for the gear or get the baseline points
+			boolean baseline = DI2.get();
+			System.out.println("Baseline?");
+			System.out.println(baseline);
+			
+			double powerlevel = pdp.getVoltage();
+			
+			boolean newbat;
+			if (powerlevel > 12.7){
+				newbat = true;
+				System.err.println("New Battery Detected! Reducing turn time");
+			}else{
+				newbat = false;
+				System.out.println("Old Battery Detected! Using old turn time");
+			}
+			
+			double turntime;
+			
+			if (newbat){
+				turntime = 0.2;
+			}else{
+				turntime = 0.125;
+			}
+			
+			int DI0statenum = 0;
+			int DI1statenum = 0;
+			
+			//Converting the binary 00, 10, 01, or 11 into an integer
+			if (DI0state) {
+				DI0statenum = 1;
+			}else{
+				DI0statenum = 0;
+			}
+			
+			if (DI1state) {
+				DI1statenum = 1;
+			}else{
+				DI1statenum = 0;
+			}
+			
+			String binstring = Integer.toString(DI0statenum) + Integer.toString(DI1statenum);
+			System.out.println("Binary String:");
+			System.out.println(binstring);
+			int autotype = Integer.parseInt(binstring, 2);
+			System.out.println("Autonomous Type:");
+			System.out.println(autotype);
+			
+			System.out.println("Drive to baseline? " + Boolean.toString(baseline));
+			
+			if (autotype == 0){
+				System.out.println("Left");
+			}
+			
+			if (autotype == 1){
+				System.out.println("Middle");
+			}
+			
+			if (autotype == 2){
+				System.out.println("Right");
+			}
+			
+			if (autotype == 3){
+				System.out.println("Nothing");
+			}
+			
+//			System.out.print("Calibrating Gyro...");
+//			gyro.calibrate();
+//			System.out.println("Gyro Calibrated!");
+			
+			//Left
+			if (autotype == 0){
+				if (baseline) {
+					drive.tankDrive(-0.75, -0.75);
+					Timer.delay(2);
+					drive.tankDrive(0.75, 0.75);
+					Timer.delay(0.75);
+					drive.tankDrive(-0.75, 0.75);
+					Timer.delay(turntime);
+				}else{
+					drive.tankDrive(-0.75, -0.75);
+					Timer.delay(1.25);
+					drive.tankDrive(-0.75, 0.75);
+					Timer.delay(turntime);
+					if (gyro.getAngle() > 30.0){
+						System.err.println("TURNED TOO FAR!! ATTEMPTING TO CORRECT...");
+						drive.tankDrive(0.75, -0.75);
+						Timer.delay(0.075);
+					}
+					drive.tankDrive(-0.75, -0.75);
+					Timer.delay(1.5);
+					drive.tankDrive(0.75, 0.75);
+					Timer.delay(0.1);
+				}
+			}
+			
+			//Middle
+			if (autotype == 1){
+				if (baseline) {
+					drive.tankDrive(-0.75, -0.75);
+					Timer.delay(0.3);
+					drive.tankDrive(-0.75, 0.75);
+					Timer.delay(turntime * 2.5);
+					drive.tankDrive(-0.75, -0.75);
+					Timer.delay(1.5);
+					drive.tankDrive(0.75, -0.75);
+					Timer.delay(turntime * 2.5);
+					drive.tankDrive(-0.75, -0.75);
+					Timer.delay(2.5);
+				}else{
+					drive.tankDrive(-0.75, -0.75);
+					Timer.delay(1.5);
+					drive.tankDrive(0.75, 0.75);
+					Timer.delay(0.1);
+				}
+			}
+			
+			//Right
+			if (autotype == 2){
+				if (baseline) {
+					drive.tankDrive(-0.75, -0.75);
+					Timer.delay(2);
+					drive.tankDrive(0.75, 0.75);
+					Timer.delay(0.75);
+					drive.tankDrive(0.75, -0.75);
+					Timer.delay(turntime);
+				}else{
+					drive.tankDrive(-0.75, -0.75);
+					Timer.delay(1.25);
+					drive.tankDrive(0.75, -0.75);
+					Timer.delay(turntime);
+					if (gyro.getAngle() < -30.0){
+						System.err.println("TURNED TOO FAR!! ATTEMPTING TO CORRECT...");
+						drive.tankDrive(-0.75, 0.75);
+						Timer.delay(0.075);
+					}
+					drive.tankDrive(-0.75, -0.75);
+					Timer.delay(1.5);
+					drive.tankDrive(0.75, 0.75);
+					Timer.delay(0.1);
+				}
+			}
+			
+			//Drive
+			if (autotype == 3){
+				drive.tankDrive(-0.85, -0.85);
+				Timer.delay(3);
+			}
+			
+			//and then stop
+			killmotors();
+			//Now set the autonomous variable to false so the code won't keep running
+			autonomous = false;
+		}
+	}
+	
+	//This method loops every 20 milliseconds (1/50 of a second) while the robot is in
+	//the teleoperated (controlled by driver) period of the match
+	@Override
+	public void teleopPeriodic() {
+		//System.out.println("Switch 1: " + Boolean.toString(DI0.get()) + ", Switch 4: " + Boolean.toString(DI1.get()) + ", Switch 8: " + Boolean.toString(DI2.get()));
+		//Calculate the speed multiplier by the position of the throttle
+		//However, the value returned by the getThrottle function ranges
+		//from -1 to 1, and we need a range of 0 to 1, so we add 1 to
+		//make the range 0 to 2
+		double multiplier = controllerR.getThrottle() + 1;
+//		//Then we divide by 2 to get the correct range of 0 to 1
+		multiplier = multiplier / 2;
+		//The thing is, the value returned by getThrottle conflicts with
+		//the indicators on the joystick.  When you move the throttle towards
+		//the plus indicator, it decreases the value, and vice versa for
+		//the negative indicator.  So we have to inverse the value by doing
+		//1 minus our previous value.
+		multiplier = 1 - multiplier;
+		multiplier = multiplier * 0.85;
+		//This code does the switching for drive modes.
+		//The if statement checks if button #2 on the controller (where the thumb rests),
+		//and checks to make sure it hasn't been too soon since a button was pressed
+		boolean nitro = controllerR.getRawButton(12);
+		if (nitro) {
+			drive.tankDrive(-0.90, -0.90);
+		}else{
+			if (controllerR.getRawButton(11) && controldelay == 0) {
+				if (driveArcade) {
+					driveArcade = false;
+					System.out.println("Tank Drive");
+				}else{
+					driveArcade = true;
+					System.out.println("Arcade Drive");
+				}
+				controldelay = 15;
+			}
+			
+			if (controllerR.getTrigger()) {
+				rightboost = 0.05;
+			}else{
+				rightboost = 0.0;
+			}
+			
+			if (controllerL.getTrigger()) {
+				leftboost = 0.05;
+			}else{
+				leftboost = 0.0;
+			}
+			
+			if (controllerR.getRawButton(3)) {
+				toggleDumper();
+			}
+			
+			if (controllerR.getRawButton(7)) {
+				dumper.set(1.0);
+			}else{
+				if (controllerR.getRawButton(8)) {
+					dumper.set(-1.0);
+				}else{
+					dumper.set(0.0);
+				}
+			}
+			
+			if (controllerR.getRawButton(6)) {
+				climber.set(1.0);
+			}else{
+				if (controllerR.getRawButton(4)) {
+					climber.set(-1.0);
+				}else{
+					climber.set(0.0);
+				}
+			}
+			
+			int POVPos = controllerR.getPOV();
+			if (POVPos == 0) {
+				if (tiltpos < 0.98) {
+					tiltpos = tiltpos + 0.01;
+				}
+			}else{
+				if (POVPos == 180) {
+					if (tiltpos > 0.29) {
+						tiltpos = tiltpos - 0.01;
+					}
+				}
+			}
+			
+			if (POVPos == 90) {
+				if (panpos < 0.98) {
+					panpos = panpos + 0.02;
+				}
+			}else{
+				if (POVPos == 270) {
+					if (panpos > 0.02) {
+						panpos = panpos - 0.02;
+					}
+				}
+			}
+			
+			//setPT();
+			
+			rightYpower = controllerR.getY() * (multiplier + rightboost);
+			rightXpower = controllerR.getX() * (multiplier + rightboost);
+			
+			leftYpower = controllerL.getY() * (multiplier + rightboost);
+			
+			if (rightYpower > 0.75) {
+				rightYpower = 0.75;
+			}else{
+				if (rightYpower < -0.75) {
+					rightYpower = 0.75;
+				}
+			}
+			
+			if (rightXpower > 0.75) {
+				rightXpower = 0.75;
+			}else{
+				if (rightXpower < -0.75) {
+					rightXpower = -0.75;
+				}
+			}
+			
+			if (leftYpower > 0.75) {
+				leftYpower = 0.75;
+			}else{
+				if (leftYpower < -0.75) {
+					leftYpower = -0.75;
+				}
+			}
+			
+			if (driveArcade) {
+				drive.arcadeDrive(rightYpower, rightXpower);
+			}else{
+				drive.tankDrive(leftYpower, rightYpower);
+			}
+		}
+		
+		if (controldelay > 0) { controldelay = controldelay - 1; }
+		
+		SmartDashboard.putData("SchedulerData", Scheduler.getInstance());
+		SmartDashboard.putBoolean("Zoom Zoom!", nitro);
+	}
+
+	@Override
+	public void testPeriodic() {
+
+	}
+}

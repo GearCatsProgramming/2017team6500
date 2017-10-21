@@ -18,7 +18,7 @@ public class Robot extends IterativeRobot {
 	//We have spark motor controllers so we are using the Spark class to initiate our front left, front right, back left, & back right motors
 	Spark fleft, fright, bleft, bright;
 	
-	Victor elevator;
+	Victor climber;
 	
 	double rightYpower, rightXpower, leftYpower;
 	
@@ -54,10 +54,10 @@ public class Robot extends IterativeRobot {
 	//* Arcade == true, Tank == false
 	boolean driveArcade = true;
 	
-	//This variable holds whether the dumper is up or down 
+	//This variable holds whether the flaps are up or down
 	//* Up == true, Down == false
-	//* The dumper is "assumed" to be up at first for synchronization purposes
-	boolean dumperUp = true;
+	//* The flaps are "assumed" to be up at first for synchronization purposes
+	boolean flaps = true;
 	
 	//The default positions for the pan and tilt servos
 	double panpos, tiltpos = 0.5;
@@ -87,14 +87,22 @@ public class Robot extends IterativeRobot {
 		fleft.setInverted(true);
 		bleft.setInverted(true);
 		
-		//Create elevator and dumper motor driver instances and toggle
+		//Create climber and dumper motor driver instances and toggle
 		//the dumper to be absolutely sure it is down
-		elevator = new Victor(Ports.climber);
+		climber = new Victor(Ports.climber);
+		//dumper = new Victor(Ports.dumper);
+		//toggleDumper();
 		
 		//This is set to make sure the program doesn't freak out
 		//when the Spark motor drivers glitch out as they have been
 		//known to do
 		drive.setSafetyEnabled(false);
+		
+		//DEPRECATED
+		//Create instances for the pan and tilt stand of the camera
+		//pan = new Servo(Ports.pan);
+		//tilt = new Servo(Ports.tilt);
+		//setPT();
 		
 		//Creating the Joystick object using the USB port ID we have it plugged into
 		controllerR = new Joystick(Ports.joystickid);
@@ -338,14 +346,41 @@ public class Robot extends IterativeRobot {
 			}
 			
 			if (controllerR.getRawButton(6)) {
-				elevator.set(1.0);
+				climber.set(1.0);
 			}else{
 				if (controllerR.getRawButton(4)) {
-					elevator.set(-1.0);
+					climber.set(-1.0);
 				}else{
-					elevator.set(0.0);
+					climber.set(0.0);
 				}
 			}
+			
+			int POVPos = controllerR.getPOV();
+			if (POVPos == 0) {
+				if (tiltpos < 0.98) {
+					tiltpos = tiltpos + 0.01;
+				}
+			}else{
+				if (POVPos == 180) {
+					if (tiltpos > 0.29) {
+						tiltpos = tiltpos - 0.01;
+					}
+				}
+			}
+			
+			if (POVPos == 90) {
+				if (panpos < 0.98) {
+					panpos = panpos + 0.02;
+				}
+			}else{
+				if (POVPos == 270) {
+					if (panpos > 0.02) {
+						panpos = panpos - 0.02;
+					}
+				}
+			}
+			
+			//setPT();
 			
 			rightYpower = controllerR.getY() * (multiplier + rightboost);
 			rightXpower = controllerR.getX() * (multiplier + rightboost);
@@ -387,6 +422,8 @@ public class Robot extends IterativeRobot {
 		
 		SmartDashboard.putData("SchedulerData", Scheduler.getInstance());
 		SmartDashboard.putBoolean("Zoom Zoom!", nitro);
+		SmartDashboard.putNumber("Move speed", rightYpower);
+		SmartDashboard.putNumber("Rotate Speed", rightXpower);
 	}
 
 	@Override
