@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PowerDistributionPanel;
 import edu.wpi.first.wpilibj.RobotDrive;
+import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
@@ -19,6 +20,7 @@ public class Robot extends IterativeRobot {
 	Spark fleft, fright, bleft, bright;
 	
 	Victor elevator;
+	Victor dumper;
 	
 	double rightYpower, rightXpower, leftYpower;
 	
@@ -38,31 +40,53 @@ public class Robot extends IterativeRobot {
 	
 	double rightboost, leftboost = 0.0;
 	
-	//The speed boost variable
-	//* Controlled by button number 
 	boolean nitro = false;
 	
 	//If a control delay variable is not created, the joystick's input is read too fast
 	//and the driver cycles through options way too fast to control it.
-	//* Used later for the following:
-	//** Line xx: Switching from Arcade to Tank controls
-	//** Line xx: Toggling the flaps
 	int controldelay = 0;
+	//A variable for timing things that we don't want to happen super often
+	int tick = 0;
 	
-	//Keeps track of whether we are using tank or arcade controls
-	//* Defaults to arcade
-	//* Arcade == true, Tank == false
 	boolean driveArcade = true;
 	
-	//This variable holds whether the dumper is up or down 
-	//* Up == true, Down == false
-	//* The dumper is "assumed" to be up at first for synchronization purposes
+	Servo pan, tilt, leftFlap, rightFlap;
+	
+	boolean flaps = true;
 	boolean dumperUp = true;
 	
-	//The default positions for the pan and tilt servos
+	public void toggleFlaps() {
+		if (flaps) {
+			leftFlap.set(0.4);
+			rightFlap.set(0.0);
+			flaps = false;
+		}else{
+			leftFlap.set(0.0);
+			rightFlap.set(0.4);
+			flaps = true;
+		}
+		
+	}
+	
 	double panpos, tiltpos = 0.5;
 	
-	//Used for the autonomous selector
+	public void setPT(){
+		pan.set(panpos);
+		tilt.set(tiltpos);
+	}
+	
+	private void toggleDumper() {
+		if (dumperUp) {
+			dumper.set(0.9);
+			dumperUp = false;
+		}else{
+			dumper.set(-0.9);
+			dumperUp = true;
+		}
+		Timer.delay(1.0);
+		dumper.set(0.0);
+	}
+	
 	DigitalInput DI0;
 	DigitalInput DI1;
 	DigitalInput DI2;
@@ -90,11 +114,21 @@ public class Robot extends IterativeRobot {
 		//Create elevator and dumper motor driver instances and toggle
 		//the dumper to be absolutely sure it is down
 		elevator = new Victor(Ports.climber);
+		dumper = new Victor(Ports.dumper);
+		toggleDumper();
 		
 		//This is set to make sure the program doesn't freak out
 		//when the Spark motor drivers glitch out as they have been
 		//known to do
 		drive.setSafetyEnabled(false);
+		
+		pan = new Servo(Ports.pan);
+		tilt = new Servo(Ports.tilt);
+		setPT();
+		
+		leftFlap = new Servo(Ports.leftGear);
+		rightFlap = new Servo(Ports.rightGear);
+		toggleFlaps();
 		
 		//Creating the Joystick object using the USB port ID we have it plugged into
 		controllerR = new Joystick(Ports.joystickid);
@@ -104,13 +138,10 @@ public class Robot extends IterativeRobot {
 		gyro = new ADXRS450_Gyro();
 		gyro.calibrate();
 		
-		//Creating the instances for the digital Input and Output ports for the autonomous selector
 		DI0 = new DigitalInput(Ports.DI0);
 		DI1 = new DigitalInput(Ports.DI1);
 		DI2 = new DigitalInput(Ports.DI2);
 		
-		//Creating the instance for the power distribution panel in order to use
-		//it to check system voltage
 		pdp = new PowerDistributionPanel();
 		
 		CameraServer.getInstance().startAutomaticCapture();
@@ -337,6 +368,25 @@ public class Robot extends IterativeRobot {
 				leftboost = 0.0;
 			}
 			
+			if (controllerR.getRawButton(5) && controldelay == 0) {
+				toggleFlaps();
+				controldelay = 15;
+			}
+			
+			if (controllerR.getRawButton(3)) {
+				toggleDumper();
+			}
+			
+			if (controllerR.getRawButton(7)) {
+				dumper.set(1.0);
+			}else{
+				if (controllerR.getRawButton(8)) {
+					dumper.set(-1.0);
+				}else{
+					dumper.set(0.0);
+				}
+			}
+			
 			if (controllerR.getRawButton(6)) {
 				elevator.set(1.0);
 			}else{
@@ -346,6 +396,33 @@ public class Robot extends IterativeRobot {
 					elevator.set(0.0);
 				}
 			}
+			
+			int POVPos = controllerR.getPOV();
+			if (POVPos == 0) {
+				if (tiltpos < 0.98) {
+					tiltpos = tiltpos + 0.01;
+				}
+			}else{
+				if (POVPos == 180) {
+					if (tiltpos > 0.29) {
+						tiltpos = tiltpos - 0.01;
+					}
+				}
+			}
+			
+			if (POVPos == 90) {
+				if (panpos < 0.98) {
+					panpos = panpos + 0.02;
+				}
+			}else{
+				if (POVPos == 270) {
+					if (panpos > 0.02) {
+						panpos = panpos - 0.02;
+					}
+				}
+			}
+			
+			setPT();
 			
 			rightYpower = controllerR.getY() * (multiplier + rightboost);
 			rightXpower = controllerR.getX() * (multiplier + rightboost);
@@ -382,8 +459,13 @@ public class Robot extends IterativeRobot {
 				drive.tankDrive(leftYpower, rightYpower);
 			}
 		}
-		
+//		drive.arcadeDrive(controller.getY() * multiplier, -controller.getX() * multiplier);
 		if (controldelay > 0) { controldelay = controldelay - 1; }
+		if (tick < 20) { tick = tick + 1; }
+		if (tick == 20) { tick = 0; }
+		if (tick == 10) {
+			//System.out.println(readUltrasonic());
+		}
 		
 		SmartDashboard.putData("SchedulerData", Scheduler.getInstance());
 		SmartDashboard.putBoolean("Zoom Zoom!", nitro);

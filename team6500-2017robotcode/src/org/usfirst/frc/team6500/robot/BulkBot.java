@@ -7,18 +7,20 @@ import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PowerDistributionPanel;
 import edu.wpi.first.wpilibj.RobotDrive;
+import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-public class Robot extends IterativeRobot {
+public class BulkBot extends IterativeRobot {
 
 	//We have spark motor controllers so we are using the Spark class to initiate our front left, front right, back left, & back right motors
 	Spark fleft, fright, bleft, bright;
 	
 	Victor elevator;
+	Victor dumper;
 	
 	double rightYpower, rightXpower, leftYpower;
 	
@@ -54,13 +56,60 @@ public class Robot extends IterativeRobot {
 	//* Arcade == true, Tank == false
 	boolean driveArcade = true;
 	
+	Servo pan, tilt, leftFlap, rightFlap;
+	
+	//This variable holds whether the flaps are up or down
+	//* Up == true, Down == false
+	//* The flaps are "assumed" to be up at first for synchronization purposes
+	boolean flaps = true;
+	
 	//This variable holds whether the dumper is up or down 
 	//* Up == true, Down == false
 	//* The dumper is "assumed" to be up at first for synchronization purposes
 	boolean dumperUp = true;
 	
+	//Toggles the flaps to the opposite of their current orientation
+	//* The value for left and right are flipped because they are facing opposite directions
+	//* The value 0.4 is used because it approximates to the position we want (up/front facing for left/right)
+	public void toggleFlaps() {
+		if (flaps) {
+			leftFlap.set(0.4);
+			rightFlap.set(0.0);
+			flaps = false;
+		}else{
+			leftFlap.set(0.0);
+			rightFlap.set(0.4);
+			flaps = true;
+		}
+		
+	}
+	
 	//The default positions for the pan and tilt servos
 	double panpos, tiltpos = 0.5;
+	
+	//Update the pan and tilt servos to location specified by their repective variables
+	public void setPT(){
+		pan.set(panpos);
+		tilt.set(tiltpos);
+	}
+	
+	//Toggles the dumper up or down
+	private void toggleDumper() {
+		//If the dumper is up
+		if (dumperUp) {
+			//Set the motor to unwind the dumper string
+			dumper.set(0.9);
+			dumperUp = false;
+		}else{
+			//Set the motor to wind up the dumper string
+			dumper.set(-0.9);
+			dumperUp = true;
+		}
+		//Run the motor for one second, it's usually enough to get it all the way up or down
+		Timer.delay(1.0);
+		//Stop the motor
+		dumper.set(0.0);
+	}
 	
 	//Used for the autonomous selector
 	DigitalInput DI0;
@@ -90,11 +139,24 @@ public class Robot extends IterativeRobot {
 		//Create elevator and dumper motor driver instances and toggle
 		//the dumper to be absolutely sure it is down
 		elevator = new Victor(Ports.climber);
+		dumper = new Victor(Ports.dumper);
+		toggleDumper();
 		
 		//This is set to make sure the program doesn't freak out
 		//when the Spark motor drivers glitch out as they have been
 		//known to do
 		drive.setSafetyEnabled(false);
+		
+		//DEPRECATED
+		//Create instances for the pan and tilt stand of the camera
+		//pan = new Servo(Ports.pan);
+		//tilt = new Servo(Ports.tilt);
+		//setPT();
+		
+		//Create flap instances and toggle them to make sure they are synced up
+		leftFlap = new Servo(Ports.leftGear);
+		rightFlap = new Servo(Ports.rightGear);
+		toggleFlaps();
 		
 		//Creating the Joystick object using the USB port ID we have it plugged into
 		controllerR = new Joystick(Ports.joystickid);
@@ -337,6 +399,25 @@ public class Robot extends IterativeRobot {
 				leftboost = 0.0;
 			}
 			
+			if (controllerR.getRawButton(5) && controldelay == 0) {
+				toggleFlaps();
+				controldelay = 15;
+			}
+			
+			if (controllerR.getRawButton(3)) {
+				toggleDumper();
+			}
+			
+			if (controllerR.getRawButton(7)) {
+				dumper.set(1.0);
+			}else{
+				if (controllerR.getRawButton(8)) {
+					dumper.set(-1.0);
+				}else{
+					dumper.set(0.0);
+				}
+			}
+			
 			if (controllerR.getRawButton(6)) {
 				elevator.set(1.0);
 			}else{
@@ -346,6 +427,33 @@ public class Robot extends IterativeRobot {
 					elevator.set(0.0);
 				}
 			}
+			
+			int POVPos = controllerR.getPOV();
+			if (POVPos == 0) {
+				if (tiltpos < 0.98) {
+					tiltpos = tiltpos + 0.01;
+				}
+			}else{
+				if (POVPos == 180) {
+					if (tiltpos > 0.29) {
+						tiltpos = tiltpos - 0.01;
+					}
+				}
+			}
+			
+			if (POVPos == 90) {
+				if (panpos < 0.98) {
+					panpos = panpos + 0.02;
+				}
+			}else{
+				if (POVPos == 270) {
+					if (panpos > 0.02) {
+						panpos = panpos - 0.02;
+					}
+				}
+			}
+			
+			setPT();
 			
 			rightYpower = controllerR.getY() * (multiplier + rightboost);
 			rightXpower = controllerR.getX() * (multiplier + rightboost);

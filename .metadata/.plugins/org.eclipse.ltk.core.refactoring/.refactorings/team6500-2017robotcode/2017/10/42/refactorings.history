@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename type &apos;org.usfirst.frc.team6500.robot.Robot&apos; to &apos;BulkBot&apos;&#x0D;&#x0A;- Original project: &apos;team6500-2017robotcode&apos;&#x0D;&#x0A;- Original element: &apos;org.usfirst.frc.team6500.robot.Robot&apos;&#x0D;&#x0A;- Renamed element: &apos;org.usfirst.frc.team6500.robot.BulkBot&apos;&#x0D;&#x0A;- Update references to refactored element&#x0D;&#x0A;- Update textual occurrences in comments and strings" description="Rename type &apos;Robot&apos;" flags="589830" id="org.eclipse.jdt.ui.rename.type" input="/src&lt;org.usfirst.frc.team6500.robot{Robot.java[Robot" matchStrategy="1" name="BulkBot" qualified="false" references="true" similarDeclarations="false" stamp="1508604727766" textual="false" version="1.0"/>
+</session>
